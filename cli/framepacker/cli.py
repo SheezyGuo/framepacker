@@ -1,6 +1,7 @@
 import click
 
 from .extract import extract_frames
+from .gif import frames_to_gif
 
 
 @click.group()
@@ -21,3 +22,20 @@ def extract(video, fps, output, start, duration, resize):
     """Extract frames from a video file."""
     result = extract_frames(video, fps, output, start, duration, resize)
     click.echo(f"Extracted {len(result)} frames to {output}")
+
+
+@cli.command()
+@click.argument("frames_dir", type=click.Path(exists=True))
+@click.option("--fps", default=10, help="Output FPS")
+@click.option("--output", "-o", default="output.gif", help="Output GIF path")
+@click.option("--resize", default=None, help="Resize (e.g. 512x512)")
+@click.option("--loop", default=0, help="Loop count (0 = infinite)")
+def gif(frames_dir, fps, output, resize, loop):
+    """Create GIF from a directory of frames."""
+    from pathlib import Path
+    frames = sorted([str(p) for p in Path(frames_dir).glob("*.png")])
+    if not frames:
+        click.echo("No PNG frames found", err=True)
+        return
+    result = frames_to_gif(frames, output, fps, resize, loop)
+    click.echo(f"GIF saved to {result}")
