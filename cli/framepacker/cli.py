@@ -3,6 +3,7 @@ import click
 from .extract import extract_frames
 from .gif import frames_to_gif
 from .sprite import frames_to_sprite
+from .dedup import dedup_frames
 
 
 @click.group()
@@ -57,3 +58,13 @@ def sprite(frames_dir, cols, output, padding, resize):
         return
     result = frames_to_sprite(frames, output, cols, padding, resize)
     click.echo(f"Sprite sheet saved to {result}")
+
+
+@cli.command()
+@click.argument("frames_dir", type=click.Path(exists=True))
+@click.option("--threshold", default=0.92, type=float, help="Similarity threshold (0-1)")
+@click.option("--output", "-o", default=None, help="Output directory")
+def dedup(frames_dir, threshold, output):
+    """Remove duplicate/similar frames from a sequence."""
+    result = dedup_frames(frames_dir, threshold, output)
+    click.echo(f"Kept {len(result)} frames after deduplication")
