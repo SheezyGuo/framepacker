@@ -6,6 +6,7 @@ from .sprite import frames_to_sprite
 from .dedup import dedup_frames
 from .removebg import remove_background
 from .edit import batch_edit
+from .pipeline import run_pipeline
 
 
 @click.group()
@@ -92,3 +93,11 @@ def edit(frames_dir, resize, crop, rotate, grayscale, output):
     """Batch edit frames (resize, crop, rotate, grayscale)."""
     result = batch_edit(frames_dir, resize, crop, rotate, grayscale, output)
     click.echo(f"Edited {len(result)} frames")
+
+
+@cli.command()
+@click.argument("config", type=click.Path(exists=True))
+def pipeline(config):
+    """Run a multi-step pipeline from a YAML config file."""
+    import sys
+    sys.exit(run_pipeline(config))
