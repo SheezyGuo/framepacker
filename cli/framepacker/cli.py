@@ -5,6 +5,7 @@ from .gif import frames_to_gif
 from .sprite import frames_to_sprite
 from .dedup import dedup_frames
 from .removebg import remove_background
+from .edit import batch_edit
 
 
 @click.group()
@@ -78,3 +79,16 @@ def remove_bg(frames_dir, output):
     """Remove background from frames using AI."""
     result = remove_background(frames_dir, output)
     click.echo(f"Processed {len(result)} frames")
+
+
+@cli.command()
+@click.argument("frames_dir", type=click.Path(exists=True))
+@click.option("--resize", default=None, help="Resize (e.g. 512x512)")
+@click.option("--crop", default=None, help="Crop (left,upper,right,lower)")
+@click.option("--rotate", default=None, type=float, help="Rotation angle")
+@click.option("--grayscale", is_flag=True, help="Convert to grayscale")
+@click.option("--output", "-o", default=None, help="Output directory")
+def edit(frames_dir, resize, crop, rotate, grayscale, output):
+    """Batch edit frames (resize, crop, rotate, grayscale)."""
+    result = batch_edit(frames_dir, resize, crop, rotate, grayscale, output)
+    click.echo(f"Edited {len(result)} frames")
