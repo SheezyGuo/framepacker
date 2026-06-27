@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useFrameStore } from '../stores/frames'
+import { framesToGif, framesToSprite } from '../api/framepacker'
 
 const store = useFrameStore()
 const format = ref('gif')
@@ -9,34 +10,28 @@ const exportResize = ref('')
 const loop = ref(0)
 const cols = ref(8)
 const exporting = ref(false)
-const cliCommand = ref('')
-
-function getCliCommand() {
-  if (!store.frameCount) return ''
-  const parts = []
-  if (format.value === 'gif') {
-    parts.push('fp gif ./frames')
-    parts.push(`--fps ${exportFps.value}`)
-    if (exportResize.value) parts.push(`--resize ${exportResize.value}`)
-    parts.push(`--loop ${loop.value}`)
-    parts.push('--output animation.gif')
-  } else if (format.value === 'png') {
-    parts.push('zip -r frames.zip ./frames')
-  } else if (format.value === 'sprite') {
-    parts.push('fp sprite ./frames')
-    parts.push(`--cols ${cols.value}`)
-    if (exportResize.value) parts.push(`--resize ${exportResize.value}`)
-    parts.push('--output sprite.png')
-  }
-  return '$ ' + parts.join(' ')
-}
-
-function showCommand() { cliCommand.value = getCliCommand() }
+const result = ref('')
+const error = ref('')
 
 async function doExport() {
   exporting.value = true
-  showCommand()
-  setTimeout(() => { exporting.value = false }, 1000)
+  error.value = ''
+  result.value = ''
+  try {
+    if (format.value === 'gif') {
+      const res = await framesToGif({ framesDir: './frames', fps: exportFps.value, output: 'animation.gif', resize: exportResize.value || null, loop: loop.value })
+      result.value = `GIF 已保存: ${res.output}`
+    } else if (format.value === 'sprite') {
+      const res = await framesToSprite({ framesDir: './frames', cols: cols.value, output: 'sprite.png', resize: exportResize.value || null })
+      result.value = `精灵表已保存: ${res.output}`
+    } else {
+      result.value = 'PNG 序列帧需手动打包: fp pipeline pack.yaml'
+    }
+  } catch (e) {
+    error.value = `导出失败: ${e.message}`
+  } finally {
+    exporting.value = false
+  }
 }
 </script>
 
@@ -51,15 +46,16 @@ async function doExport() {
       </div>
       <div class="export-params">
         <label v-if="format === 'gif'">帧率 (FPS) <input v-model.number="exportFps" type="number" min="1" max="60" /></label>
-        <label v-if="format === 'gif'">循环次数 (0=无限) <input v-model.number="loop" type="number" min="0" /></label>
+        <label v-if="format === 'gif'">循环次数 <input v-model.number="loop" type="number" min="0" /></label>
         <label v-if="format === 'sprite'">列数 <input v-model.number="cols" type="number" min="1" max="20" /></label>
-        <label>缩放 (留空=原始) <input v-model="exportResize" type="text" placeholder="如 512x512" /></label>
+        <label>缩放 <input v-model="exportResize" type="text" placeholder="如 512x512" /></label>
       </div>
     </div>
     <button :disabled="!store.frameCount || exporting" class="btn-primary" @click="doExport">
-      {{ exporting ? '导出中...' : '生成导出命令' }}
+      {{ exporting ? '导出中...' : '开始导出' }}
     </button>
-    <pre v-if="cliCommand" class="cli-command">{{ cliCommand }}</pre>
+    <p v-if="error" class="error">{{ error }}</p>
+    <p v-if="result" class="success">{{ result }}</p>
   </div>
 </template>
 
@@ -74,5 +70,6 @@ h2 { color: #1a1a2e; margin-bottom: 1rem; }
 .export-params input { padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; }
 .btn-primary { padding: 0.7rem 2rem; background: #ff6b35; color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.cli-command { margin-top: 1rem; padding: 1rem; background: #1a1a2e; color: #0f0; border-radius: 8px; white-space: pre-wrap; font-family: monospace; }
+.error { margin-top: 0.5rem; color: #d32f2f; }
+.success { margin-top: 0.5rem; color: #2e7d32; }
 </style>

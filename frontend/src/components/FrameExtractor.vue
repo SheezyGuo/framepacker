@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useFrameStore } from '../stores/frames'
+import { extractFrames as apiExtract } from '../api/framepacker'
 
 const store = useFrameStore()
 const fps = ref(12)
@@ -9,13 +10,30 @@ const start = ref(0)
 const resize = ref('')
 const extracting = ref(false)
 const progress = ref('')
+const error = ref('')
 
 async function extractFrames() {
   if (!store.videoFile) return
   extracting.value = true
-  progress.value = 'Preparing...'
-  extracting.value = false
-  progress.value = 'Connecting to backend... (see Task 14 for full integration)'
+  error.value = ''
+  progress.value = '提取中...'
+
+  try {
+    const result = await apiExtract({
+      videoPath: store.videoFile.name,
+      fps: fps.value,
+      output: './frames',
+      start: start.value,
+      duration: duration.value || null,
+      resize: resize.value || null,
+    })
+    store.addFrames(result.frames)
+    progress.value = `成功提取 ${result.count} 帧`
+  } catch (e) {
+    error.value = `提取失败: ${e.message}`
+  } finally {
+    extracting.value = false
+  }
 }
 </script>
 
@@ -31,7 +49,8 @@ async function extractFrames() {
     <button :disabled="!store.videoFile || extracting" class="btn-primary" @click="extractFrames">
       {{ extracting ? '提取中...' : '提取帧' }}
     </button>
-    <pre v-if="progress" class="cli-hint">{{ progress }}</pre>
+    <p v-if="error" class="error">{{ error }}</p>
+    <p v-if="progress && !error" class="progress">{{ progress }}</p>
   </div>
 </template>
 
@@ -43,5 +62,6 @@ label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; c
 input { padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
 .btn-primary { padding: 0.7rem 2rem; background: #ff6b35; color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.cli-hint { margin-top: 1rem; padding: 1rem; background: #1a1a2e; color: #0f0; border-radius: 8px; white-space: pre-wrap; font-family: monospace; }
+.error { margin-top: 0.5rem; color: #d32f2f; }
+.progress { margin-top: 0.5rem; color: #2e7d32; }
 </style>
