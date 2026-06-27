@@ -4,6 +4,7 @@ from .extract import extract_frames
 from .gif import frames_to_gif
 from .sprite import frames_to_sprite
 from .dedup import dedup_frames
+from .removebg import remove_background
 
 
 @click.group()
@@ -68,3 +69,12 @@ def dedup(frames_dir, threshold, output):
     """Remove duplicate/similar frames from a sequence."""
     result = dedup_frames(frames_dir, threshold, output)
     click.echo(f"Kept {len(result)} frames after deduplication")
+
+
+@cli.command(name="remove-bg")
+@click.argument("frames_dir", type=click.Path(exists=True))
+@click.option("--output", "-o", default=None, help="Output directory")
+def remove_bg(frames_dir, output):
+    """Remove background from frames using AI."""
+    result = remove_background(frames_dir, output)
+    click.echo(f"Processed {len(result)} frames")
