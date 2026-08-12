@@ -5,6 +5,7 @@ export const useFrameStore = defineStore('frames', {
     videoFile: null,
     frames: [],
     fps: 12,
+    previewIdx: 0,
     selectedFrames: new Set(),
   }),
   getters: {
@@ -13,8 +14,9 @@ export const useFrameStore = defineStore('frames', {
   },
   actions: {
     setVideo(file) { this.videoFile = file; },
+    setPreview(idx) { this.previewIdx = idx; },
     addFrames(paths) { this.frames.push(...paths); },
-    clearFrames() { this.frames = []; this.selectedFrames.clear(); },
+    clearFrames() { this.frames = []; this.selectedFrames.clear(); this.previewIdx = 0; },
     toggleSelect(idx) {
       if (this.selectedFrames.has(idx)) this.selectedFrames.delete(idx)
       else this.selectedFrames.add(idx)

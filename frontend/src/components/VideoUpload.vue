@@ -26,7 +26,7 @@ function triggerFileInput() {
       <p class="hint">支持 MP4, AVI, MOV, WebM 等常见格式</p>
     </div>
     <div v-else class="upload-preview">
-      <video :src="videoUrl" controls width="100%" />
+      <video :src="videoUrl" controls class="preview-video" />
       <p>{{ store.videoFile.name }} ({{ (store.videoFile.size / 1024 / 1024).toFixed(1) }} MB)</p>
       <button @click.stop="store.setVideo(null); videoUrl=null" class="btn-link">更换视频</button>
     </div>
@@ -39,5 +39,6 @@ function triggerFileInput() {
 .upload-placeholder p { font-size: 1.1rem; color: #666; }
 .hint { font-size: 0.85rem; color: #999; margin-top: 0.5rem; }
 .upload-preview p { margin-top: 0.5rem; color: #555; }
+.preview-video { max-width: 280px; width: 100%; border-radius: 8px; }
 .btn-link { background: none; border: none; color: #ff6b35; cursor: pointer; text-decoration: underline; margin-top: 0.5rem; }
 </style>

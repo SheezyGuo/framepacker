@@ -1,6 +1,7 @@
 <script setup>
 import VideoUpload from '../components/VideoUpload.vue'
 import FrameExtractor from '../components/FrameExtractor.vue'
+import GifImport from '../components/GifImport.vue'
 </script>
 
 <template>
@@ -8,6 +9,7 @@ import FrameExtractor from '../components/FrameExtractor.vue'
     <h1>视频抽帧</h1>
     <VideoUpload />
     <FrameExtractor />
+    <GifImport />
   </div>
 </template>
 

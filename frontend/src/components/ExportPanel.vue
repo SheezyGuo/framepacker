@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useFrameStore } from '../stores/frames'
-import { framesToGif, framesToSprite } from '../api/framepacker'
+import { framesToGif, framesToSprite, exportZip } from '../api/framepacker'
 
 const store = useFrameStore()
 const format = ref('gif')
@@ -13,19 +13,29 @@ const exporting = ref(false)
 const result = ref('')
 const error = ref('')
 
+function framesDir() {
+  if (!store.frames.length) return null
+  const first = store.frames[0]
+  const slash = Math.max(first.lastIndexOf('/'), first.lastIndexOf('\\'))
+  return slash >= 0 ? first.slice(0, slash) : null
+}
+
 async function doExport() {
+  const dir = framesDir()
+  if (!dir || !store.frameCount) return
   exporting.value = true
   error.value = ''
   result.value = ''
   try {
     if (format.value === 'gif') {
-      const res = await framesToGif({ framesDir: './frames', fps: exportFps.value, output: 'animation.gif', resize: exportResize.value || null, loop: loop.value })
+      const res = await framesToGif({ framesDir: dir, fps: exportFps.value, output: `${dir}/animation.gif`, resize: exportResize.value || null, loop: loop.value })
       result.value = `GIF 已保存: ${res.output}`
     } else if (format.value === 'sprite') {
-      const res = await framesToSprite({ framesDir: './frames', cols: cols.value, output: 'sprite.png', resize: exportResize.value || null })
+      const res = await framesToSprite({ framesDir: dir, cols: cols.value, output: `${dir}/sprite.png`, resize: exportResize.value || null })
       result.value = `精灵表已保存: ${res.output}`
     } else {
-      result.value = 'PNG 序列帧需手动打包: fp pipeline pack.yaml'
+      await exportZip({ framesDir: dir, name: 'frames.zip' })
+      result.value = 'PNG 序列帧已打包下载 (frames.zip)'
     }
   } catch (e) {
     error.value = `导出失败: ${e.message}`

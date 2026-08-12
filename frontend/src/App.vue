@@ -25,5 +25,5 @@ nav { display: flex; gap: 1.5rem; align-items: center; }
 nav a { color: #e0e0e0; text-decoration: none; font-weight: 500; }
 nav a:hover { color: #fff; }
 nav a:first-child { font-size: 1.2rem; font-weight: 700; color: #ff6b35; }
-main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+main { max-width: 1600px; margin: 0 auto; padding: 2rem; }
 </style>

@@ -20,9 +20,8 @@ async function extractFrames() {
 
   try {
     const result = await apiExtract({
-      videoPath: store.videoFile.name,
+      videoFile: store.videoFile,
       fps: fps.value,
-      output: './frames',
       start: start.value,
       duration: duration.value || null,
       resize: resize.value || null,

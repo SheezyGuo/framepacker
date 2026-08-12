@@ -6,3 +6,6 @@ __pycache__/
 .superpowers/
 dist/
 *.log
+
+# runtime workspace
+cli/workspace/
